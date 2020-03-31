@@ -1,7 +1,6 @@
-﻿using System.Net.Http;
+﻿using LibraryApi;
+using System.Net.Http;
 using System.Threading.Tasks;
-using LibraryApi;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace LibraryApiIntegrationTests
