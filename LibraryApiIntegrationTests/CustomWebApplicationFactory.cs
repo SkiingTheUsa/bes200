@@ -1,4 +1,6 @@
-﻿using LibraryApi.Domain;
+﻿using LibraryApi.Controllers;
+using LibraryApi.Domain;
+using LibraryApi.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
-using LibraryApi.Services;
 
 namespace LibraryApiIntegrationTests
 {
@@ -21,6 +22,7 @@ namespace LibraryApiIntegrationTests
                 var descriptor = services.SingleOrDefault(
                     d => d.ServiceType ==
                         typeof(DbContextOptions<LibraryDataContext>));
+
                 if (descriptor != null)
                 {
                     services.Remove(descriptor);
@@ -41,6 +43,13 @@ namespace LibraryApiIntegrationTests
                 }
                 services.AddTransient<IGenerateEmployeeIds, TestingEmployeeIdGenerator>();
 
+                var lookupOnCallDeveloperDescriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(ILookupOnCallDevelopers));
+                if (lookupOnCallDeveloperDescriptor != null)
+                {
+                    services.Remove(lookupOnCallDeveloperDescriptor);
+                }
+                services.AddTransient<ILookupOnCallDevelopers, FakeTeamsDeveloperLookup>();
 
                 // Build the service provider.
                 var sp = services.BuildServiceProvider();
