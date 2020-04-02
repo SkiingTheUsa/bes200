@@ -1,7 +1,9 @@
 ﻿using LibraryApi.Domain;
 using LibraryApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace LibraryApi.Controllers
@@ -38,6 +40,70 @@ namespace LibraryApi.Controllers
             await _reservationQueue.Write(reservation);
             // return a response (201)
             return Ok(reservation);
+        }
+
+        [HttpPost("/reservations/approved")]
+        public async Task<ActionResult> ApprovedReservation([FromBody] Reservation reservation)
+        {
+            var storedReservation = await _context.Reservations.SingleOrDefaultAsync(r => r.Id == reservation.Id);
+            if (storedReservation == null)
+            {
+                return BadRequest("No Pending Reservation with that id");
+                // decision time!
+            }
+            else
+            {
+                storedReservation.Status = ReservationStatus.Approved;
+                // do other stuff, or write a message to the queue that other processes will handle.
+                await _context.SaveChangesAsync();
+                return Accepted();
+            }
+        }
+
+        [HttpPost("/reservations/cancelled")]
+        public async Task<ActionResult> CancelledReservation([FromBody] Reservation reservation)
+        {
+            var storedReservation = await _context.Reservations.SingleOrDefaultAsync(r => r.Id == reservation.Id);
+            if (storedReservation == null)
+            {
+                return BadRequest("No Pending Reservation with that id");
+                // decision time!
+            }
+            else
+            {
+                storedReservation.Status = ReservationStatus.Cancelled;
+                // do other stuff, or write a message to the queue that other processes will handle.
+                await _context.SaveChangesAsync();
+                return Accepted();
+            }
+        }
+
+        [HttpGet("/reservations/approved")]
+        public async Task<ActionResult> GetApprovedReservations()
+        {
+            var response = await _context.Reservations
+                .Where(r => r.Status == ReservationStatus.Approved)
+                .ToListAsync();
+            // TODO: Project these into models. This is not a great way to do it. Classroom only.
+            return Ok(response);
+        }
+        [HttpGet("/reservations/cancelled")]
+        public async Task<ActionResult> GetCancelledReservations()
+        {
+            var response = await _context.Reservations
+                .Where(r => r.Status == ReservationStatus.Cancelled)
+                .ToListAsync();
+            // TODO: Project these into models. This is not a great way to do it. Classroom only.
+            return Ok(response);
+        }
+        [HttpGet("/reservations/pending")]
+        public async Task<ActionResult> GetPendingReservations()
+        {
+            var response = await _context.Reservations
+                .Where(r => r.Status == ReservationStatus.Pending)
+                .ToListAsync();
+            // TODO: Project these into models. This is not a great way to do it. Classroom only.
+            return Ok(response);
         }
     }
 }
