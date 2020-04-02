@@ -12,6 +12,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using RabbitMqUtils;
 
 namespace LibraryApi
 {
@@ -27,6 +28,8 @@ namespace LibraryApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddRabbit(Configuration);
+            services.AddTransient<IWriteToReservationQueue, RabbitMqReservationProcessor>();
             services.AddTransient<ILookupOnCallDevelopers, MicrosoftTeamsOnCallDeveloperLookup>();
             services.AddTransient<IGenerateEmployeeIds, EmployeeIdGenerator>();
             services.AddControllers()

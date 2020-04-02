@@ -9,10 +9,12 @@ namespace LibraryApi.Controllers
     public class ReservationsController : Controller
     {
         private readonly LibraryDataContext _context;
+        private readonly IWriteToReservationQueue _reservationQueue;
 
-        public ReservationsController(LibraryDataContext context)
+        public ReservationsController(LibraryDataContext context, IWriteToReservationQueue reservationQueue)
         {
             _context = context;
+            _reservationQueue = reservationQueue;
         }
 
         [HttpPost("/reservations")]
@@ -32,6 +34,8 @@ namespace LibraryApi.Controllers
             await _context.SaveChangesAsync();
             // write a message to the queue
             // TODO: RabbitMQ
+            // Write the code you wish you had.
+            await _reservationQueue.Write(reservation);
             // return a response (201)
             return Ok(reservation);
         }
